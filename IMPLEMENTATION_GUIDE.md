@@ -31,8 +31,8 @@ Create a testbench that:
 
 | # | Plaintext | Key | Expected Ciphertext |
 |---|-----------|-----|---------------------|
-| 1 | `000102030405060708090a0b0c0d0e0f` | `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` | `8ea2b7ca516745bfeafc49904b496089` |
-| 2 | `00000000000000000000000000000000` | `0000000000000000000000000000000000000000000000000000000000000000` | `c3aa1f6d954d025a164bc15c9d7b3b3a` |
+| 1 | `00112233445566778899aabbccddeeff` | `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` | `8ea2b7ca516745bfeafc49904b496089` |
+| 2 | `00000000000000000000000000000000` | `0000000000000000000000000000000000000000000000000000000000000000` | `dc95c078a2408989ad48a21492842087` |
 
 ### Testbench Code
 
@@ -113,25 +113,25 @@ module tb_aes_256_top;
         rst = 0;
         @(posedge clk);
 
-        // NIST FIPS-197 Appendix C.3 — AES-256 Test Vector 1
+        // NIST FIPS-197 Appendix C.2 — AES-256 Test Vector 1
         run_test(
-            128'h00010203_04050607_08090a0b_0c0d0e0f,
+            128'h00112233_44556677_8899aabb_ccddeeff,
             256'h00010203_04050607_08090a0b_0c0d0e0f_10111213_14151617_18191a1b_1c1d1e1f,
             128'h8ea2b7ca_516745bf_eafc4990_4b496089
         );
 
-        // NIST FIPS-197 Appendix C.3 — AES-256 Test Vector 2
+        // NIST FIPS-197 Appendix C.2 — AES-256 Test Vector 2
         run_test(
             128'h00000000_00000000_00000000_00000000,
             256'h00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000,
-            128'hc3aa1f6d_954d025a_164bc15c_9d7b3b3a
+            128'hdc95c078_a2408989_ad48a214_92842087
         );
 
-        // NIST FIPS-197 Appendix C.3 — AES-256 Test Vector 3
+        // NIST FIPS-197 Appendix C.2 — AES-256 Test Vector 3
         run_test(
-            128'hffffffff_ffffffff_ffffffff_ffffffff,
-            256'h00010203_04050607_08090a0b_0c0d0e0f_10111213_14151617_18191a1b_1c1d1e1f,
-            128'h5940d23c_82a414bd_92bc4018_31b2604d
+            128'h00112233_44556677_8899aabb_ccddeeff,
+            256'hffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff,
+            128'hd9b88417_02b50e9b_5ed50a14_94dff0e2
         );
 
         $display("-------------------");

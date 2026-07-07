@@ -1,134 +1,174 @@
 # AES-256-bit-Key-Encryption--Vivado-Architecture
+
 RTL architecture design of an AES-256 encryption core in Xilinx Vivado, verified up to structural logic and RTL schematic generation.
 
-## Project Overview
-This project is an RTL-level hardware implementation of the AES-256 encryption standard designed using Xilinx Vivado. The primary objective was mapping the structural logic of the algorithm and analyzing data-path synthesis.
+## Abstract
 
-## Status
-* **Completed:** RTL design, compilation, RTL Schematic generation, decryption, pipelining, AES-GCM, side-channel masking, testbench.
-* **Current Boundary:** Hardware Pin Limitation Study (Detailed below).
+This project presents a complete hardware-software co-design framework for the Advanced Encryption Standard (AES) with 256-bit key length. The hardware implementation provides a fully pipelined RTL architecture in Verilog targeting Xilinx Vivado FPGAs, featuring encryption/decryption, AES-GCM authenticated encryption, and side-channel countermeasures. The software implementation provides a reference Python model for algorithmic validation and educational use. The project addresses key challenges in cryptographic hardware design including I/O pin bottlenecks, side-channel vulnerability, and authenticated encryption requirements.
 
-## Tools Used
-* **IDE:** Xilinx Vivado
-* **Language:** Verilog
+## Authors
+
+| Name | Role |
+|------|------|
+| Indrasish Ray | Hardware Architecture, RTL Design |
+| Subhojit Roy | Algorithm Design, Verification |
 
 ## Project Structure
+
 ```
 AES-256-bit-Key-Encryption--Vivado-Architecture/
-├── hardware implementation/
-│   ├── Core AES Modules
-│   │   ├── aes_256_top.v                 # Top-level FSM — encryption only
-│   │   ├── aes_256_top_enc_dec.v         # Top-level FSM — encryption + decryption
-│   │   ├── aes256_key_expansion_flat.v   # Combinational key expander
-│   │   ├── subbytes.v                    # SubBytes — 16 parallel S-boxes
-│   │   ├── sbox_lookup.v                 # AES S-box (256-entry LUT)
-│   │   ├── shiftrows.v                   # ShiftRows — byte permutation
-│   │   └── mixcolumns.v                  # MixColumns — GF(2^8) mixing
-│   │
-│   ├── Decryption Modules
-│   │   ├── inv_sbox_lookup.v             # Inverse S-box
-│   │   ├── inv_subbytes.v                # Inverse SubBytes
-│   │   ├── inv_shiftrows.v               # Inverse ShiftRows
-│   │   └── inv_mixcolumns.v              # Inverse MixColumns
-│   │
-│   ├── Pipelined Architecture
-│   │   ├── aes_256_pipelined.v           # 15-stage fully pipelined AES
-│   │   └── aes_round_stage.v             # Single pipeline stage module
-│   │
-│   ├── AES-GCM (Authenticated Encryption)
-│   │   ├── aes_gcm_top.v                 # AES-GCM: CTR + GHASH
-│   │   └── ghash.v                       # GF(2^128) GHASH multiplier
-│   │
-│   ├── Side-Channel Countermeasures
-│   │   ├── masked_sbox.v                 # Boolean-masked S-box
-│   │   └── masked_subbytes.v             # 16 masked S-boxes
-│   │
-│   ├── Testbench
-│   │   └── tb_aes_256_top.v              # NIST FIPS-197 test vectors
-│   │
-│   └── aes_256_schematic.png.png         # Synthesized RTL schematic
-├── software implementation/              # (Placeholder)
-├── IMPLEMENTATION_GUIDE.md               # Research gaps & solutions
-└── README.md
+├── hardware implementation/    # Verilog RTL — FPGA implementation
+├── software implementation/    # Python reference model
+├── IMPLEMENTATION_GUIDE.md     # Research gaps & solutions
+└── README.md                   # This file
 ```
 
-## Module Hierarchy
+## Quick Start
 
-### Core AES
-| Module | File | Description |
-|---|---|---|
-| `aes_256_top` | `aes_256_top.v` | Top-level FSM — 14-round encryption controller |
-| `aes_256_top_enc_dec` | `aes_256_top_enc_dec.v` | Top-level with encryption + decryption support |
-| `aes256_key_expansion_flat` | `aes256_key_expansion_flat.v` | Combinational key expander — 15 round keys from 256-bit key |
-| `subbytes` | `subbytes.v` | SubBytes — 16 parallel S-box substitutions |
-| `sbox_lookup` | `sbox_lookup.v` | AES S-box (256-entry lookup table) |
-| `shiftrows` | `shiftrows.v` | ShiftRows — byte permutation across state rows |
-| `mixcolumns` | `mixcolumns.v` | MixColumns — GF(2^8) column mixing |
+**New to this project?** See the [Beginner's Manual](#beginners-manual) below or jump to:
+- [Hardware Implementation](hardware%20implementation/README.md) — Verilog modules, FPGA synthesis
+- [Software Implementation](software%20implementation/README.md) — Python reference model
 
-### Decryption
-| Module | File | Description |
-|---|---|---|
-| `inv_sbox_lookup` | `inv_sbox_lookup.v` | Inverse AES S-box |
-| `inv_subbytes` | `inv_subbytes.v` | Inverse SubBytes — 16 parallel inverse S-boxes |
-| `inv_shiftrows` | `inv_shiftrows.v` | Inverse ShiftRows — reverse byte permutation |
-| `inv_mixcolumns` | `inv_mixcolumns.v` | Inverse MixColumns — GF(2^8) inverse column mixing |
+## Features
 
-### Pipelined
-| Module | File | Description |
-|---|---|---|
-| `aes_256_pipelined` | `aes_256_pipelined.v` | 15-stage fully pipelined AES — 1 block/cycle throughput |
-| `aes_round_stage` | `aes_round_stage.v` | Single pipeline stage (SubBytes + ShiftRows + MixColumns + AddRoundKey) |
+| Feature | Hardware | Software |
+|---------|----------|----------|
+| AES-256 Encryption | ✅ Verilog RTL | ✅ Python |
+| AES-256 Decryption | ✅ Verilog RTL | ✅ Python |
+| Pipelined Architecture | ✅ 15-stage pipeline | — |
+| AES-GCM (Authenticated Encryption) | ✅ CTR + GHASH | — |
+| Side-Channel Masking | ✅ Boolean masking | — |
+| Testbench / Unit Tests | ✅ NIST FIPS-197 vectors | ✅ pytest |
+| Synthesis Report | ✅ Vivado | — |
 
-### AES-GCM
-| Module | File | Description |
-|---|---|---|
-| `aes_gcm_top` | `aes_gcm_top.v` | AES-GCM authenticated encryption (CTR + GHASH) |
-| `ghash` | `ghash.v` | GF(2^128) hash function for authentication |
+## Tools & Requirements
 
-### Side-Channel
-| Module | File | Description |
-|---|---|---|
-| `masked_sbox` | `masked_sbox.v` | Boolean-masked S-box for DPA resistance |
-| `masked_subbytes` | `masked_subbytes.v` | 16 masked S-boxes for first-order masking |
+### Hardware
+- **IDE:** Xilinx Vivado 2020.2+
+- **Language:** Verilog (IEEE 1364-2005)
+- **Target:** Any Xilinx 7-series or UltraScale+ FPGA
+- **Optional:** Icarus Verilog (for simulation without Vivado)
 
-## Implemented Features
+### Software
+- **Language:** Python 3.8+
+- **Dependencies:** None (standard library only)
 
-### Decryption
-Inverse transformation modules (`inv_subbytes`, `inv_shiftrows`, `inv_mixcolumns`) enable bidirectional AES. The `aes_256_top_enc_dec` module selects encrypt/decrypt via a `decrypt` input. Decryption reverses the round key order.
+## Performance Summary
 
-### Pipelined Architecture
-`aes_256_pipelined` inserts registers between each AES round. A new plaintext block enters every clock cycle. Latency remains 15 cycles, but throughput increases from 1 block/15 cycles to 1 block/cycle (~15x improvement).
-
-### AES-GCM Authenticated Encryption
-`aes_gcm_top` combines AES-CTR (confidentiality) with GHASH (integrity). Provides both encryption and authentication — required by TLS 1.3, IPsec, and MACsec (802.1AE).
-
-### Side-Channel Masking
-`masked_sbox` and `masked_subbytes` implement first-order Boolean masking. Each S-box input is split into two random shares, hiding the correlation between power consumption and secret data.
-
-### Testbench
-`tb_aes_256_top` verifies against NIST FIPS-197 AES-256 test vectors (Appendix C.3). Tests three known plaintext-key-ciphertext triples and reports pass/fail.
-
-## Bug Fixes (v2)
-1. **Pulse-triggered FSM** — `start` is now a single-cycle trigger; FSM runs autonomously.
-2. **`done` auto-clear** — Pulses HIGH for one cycle, then clears.
-3. **Stale `cipher_text`** — Cleared at start of each new encryption.
-4. **Port mismatch** — Removed unused `clk`/`rst`/`start` from key expansion module.
-5. **`state` reset** — All registers now initialized on `rst`.
+| Metric | Sequential | Pipelined |
+|--------|-----------|-----------|
+| Latency | 15 cycles | 15 cycles |
+| Throughput @ 100 MHz | ~853 Mbps | ~12.8 Gbps |
+| Area (estimated) | ~4000 LUTs | ~60000 LUTs |
 
 ## Architectural Case Study: The I/O Pin Bottleneck
-During the initial synthesis phase, the design encountered an **I/O Placement Overutilization Error**.
 
-### The Problem:
-A fully parallelized AES-256 core requires:
-* 256 bits for the Key input
-* 128 bits for the Plaintext input
-* 128 bits for the Ciphertext output
-* Additional control signals (`clk`, `rst`, `ready`, etc.)
+During the initial synthesis phase, the design encountered an **I/O Placement Overutilization Error**. A fully parallelized AES-256 core requires 515+ physical I/O pins (256 key + 128 plaintext + 128 ciphertext + control signals), exceeding standard FPGA package limits.
 
-This results in a top-level module requiring **515+ physical I/O pins**. When compiled without a specific pin-reduction strategy, Vivado identifies that the design exceeds the available physical package boundaries of standard target FPGAs.
+**Resolution:** The architecture transitions from direct parallel I/O to a **Hardware-Software Co-Design** approach using AXI4-Lite/Stream interfaces for Zynq SoC integration.
 
-### Next Steps & Key Takeaways:
-To resolve the 500+ pin bottleneck, the architecture will transition from direct parallel I/O ports to a **Hardware-Software Co-Design** approach, using an internal **AXI4-Lite/Stream interface** to stream data through the Zynq Processing System (PS) instead of physical FPGA pins.
+## References
 
-## Synthesized RTL Schematic
-![AES-256 Top-Level Schematic](hardware%20implementation/aes_256_schematic.png.png)
+1. NIST FIPS 197 — Advanced Encryption Standard (AES)
+2. NIST SP 800-38D — Galois/Counter Mode (GCM)
+3. NIST SP 800-232 — Ascon-Based Lightweight Cryptography Standards
+4. Moradi et al. (2011) — "On the Portability of Side-Channel Attacks"
+5. Malal & Tezcan (2026) — "First Fully Pipelined High Throughput FPGA Implementation of WAES-256"
+
+## License
+
+This project is for educational and research purposes.
+
+---
+
+## Beginner's Manual
+
+This section explains how to run this project on your own system.
+
+### Prerequisites
+
+| OS | What to Install |
+|----|----------------|
+| **Linux** (Ubuntu/Debian) | Python 3, Icarus Verilog (optional) |
+| **Windows** | Python 3, Icarus Verilog or Vivado (optional) |
+| **macOS** | Python 3, Icarus Verilog (optional) |
+
+### Step 1: Clone the Repository
+
+Open a terminal and run:
+
+```bash
+git clone https://github.com/IndrasishRay/AES-256-bit-Key-Encryption-Vivado.git
+cd AES-256-bit-Key-Encryption-Vivado
+```
+
+### Step 2: Run the Software Implementation (No special tools needed)
+
+```bash
+cd "software implementation"
+python3 aes256_software.py
+```
+
+You should see:
+```
+AES-256 Software Implementation
+================================
+Test 1: PASS
+Test 2: PASS
+Test 3: PASS
+All tests passed.
+```
+
+### Step 3: Simulate the Hardware (Optional)
+
+#### Option A: Using Icarus Verilog (Free, works on all OS)
+
+**Install Icarus Verilog:**
+
+| OS | Command |
+|----|---------|
+| Linux | `sudo apt install iverilog` |
+| Windows | Download from [https://iverilog.icarus.com](https://iverilog.icarus.com) |
+| macOS | `brew install icarus-verilog` |
+
+**Run simulation:**
+```bash
+cd "hardware implementation"
+iverilog -o tb_sim -y . tb_aes_256_top.v
+vvp tb_sim
+```
+
+Expected output:
+```
+TEST 1: PASS  CT=8ea2b7ca516745bfeafc49904b496089
+TEST 2: PASS  CT=dc95c078a2408989ad48a21492842087
+TEST 3: PASS  CT=d9b8841702b50e9b5ed50a1494dff0e2
+-------------------
+Results: 3 passed, 0 failed
+-------------------
+```
+
+#### Option B: Using Xilinx Vivado (Free WebPACK edition)
+
+1. Open Vivado → Create Project
+2. Add all `.v` files from `hardware implementation/`
+3. Add `tb_aes_256_top.v` as simulation source
+4. Run Behavioral Simulation
+5. Check Tcl Console for PASS/FAIL results
+
+### Step 4: View the RTL Schematic (Vivado only)
+
+1. Open Vivado → Open Project
+2. Run Synthesis → Open Synthesized Design
+3. Click "Schematic" to view the RTL block diagram
+4. Screenshot saved as `aes_256_schematic.png.png`
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `iverilog: command not found` | Install Icarus Verilog (see Step 3) |
+| `python3: command not found` | Install Python 3 from [python.org](https://python.org) |
+| Vivado won't open `.v` files | Create a new project first, then add sources |
+| Simulation shows all `X` | Check that all testbench signals are initialized |
+| `Permission denied` on Linux | Run `chmod +x` or use `python3` instead of `./` |
