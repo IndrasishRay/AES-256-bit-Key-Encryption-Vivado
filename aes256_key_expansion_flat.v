@@ -22,9 +22,6 @@
 
 // ======================== AES-256 Key Expansion ========================
 module aes256_key_expansion_flat (
-    input  wire clk,
-    input  wire rst,
-    input  wire start,
     input  wire [255:0] key_in,
     output reg  [1919:0] round_keys_flat  // 15 * 128-bit = 1920-bit
 );

@@ -21,29 +21,22 @@
 
 
 module aes_256_top(
- input  wire         clk,
+    input  wire         clk,
     input  wire         rst,
     input  wire         start,
     input  wire [127:0] plain_text,
     input  wire [255:0] key,
     output reg  [127:0] cipher_text,
     output reg          done
-    );
-    
-     reg [3:0] round;
- //
-	reg [127:0] state;
-    wire [1919:0] round_keys_flat;  // 15 * 128 = 1920 bits
+);
+
+    reg [3:0] round;
+    reg [127:0] state;
+    wire [1919:0] round_keys_flat;
     wire [10:0] round_index = round * 128;
     wire [127:0] round_key = round_keys_flat[round_index +: 128];
-    
-     // Generate all round keys
+
     aes256_key_expansion_flat keygen (
-        .clk(clk),
-        .rst(rst),
-        //
-       // .start(start),
-        //
         .key_in(key),
         .round_keys_flat(round_keys_flat)
     );
@@ -70,21 +63,22 @@ module aes_256_top(
             round <= 0;
             done <= 0;
             cipher_text <= 0;
-        end else if (start) begin
-            if (round == 0) begin
-                state <= plain_text ^ round_key;  // Initial AddRoundKey
-                round <= 1;
-            end else if (round < 14) begin
-                state <= mc_out ^ round_key;
-                round <= round + 1;
-            end else if (round == 14) begin
-                state <= sr_out ^ round_key; // Final round
-                cipher_text <= sr_out ^ round_key;
-                done <= 1;
-                round <= 0;
-            end
+            state <= 0;
+        end else if (start && round == 0 && !done) begin
+            state <= plain_text ^ round_key;
+            cipher_text <= 0;
+            done <= 0;
+            round <= 1;
+        end else if (round > 0 && round < 14) begin
+            state <= mc_out ^ round_key;
+            round <= round + 1;
+        end else if (round == 14) begin
+            cipher_text <= sr_out ^ round_key;
+            done <= 1;
+            round <= 0;
+        end else begin
+            done <= 0;
         end
     end
-    
-    
+
 endmodule
