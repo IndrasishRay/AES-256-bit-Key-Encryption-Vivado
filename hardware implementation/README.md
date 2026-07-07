@@ -130,3 +130,84 @@ inv_*.v              — Inverse (decryption) modules
 masked_*.v           — Side-channel countermeasures
 tb_*.v               — Testbenches
 ```
+
+---
+
+## Demo / Walkthrough
+
+### Step 1: Install a Verilog Simulator
+
+Choose **one** of the following:
+
+| Simulator | Linux | macOS | Windows | Notes |
+|-----------|-------|-------|---------|-------|
+| **Icarus Verilog** (free) | `sudo apt install iverilog` | `brew install icarus-verilog` | [Download installer](https://iverilog.icarus.com) | Works on all platforms |
+| **Xilinx Vivado** (free) | Download from [AMD/Xilinx](https://www.xilinx.com/support/download.html) | Same download | Same download | Full FPGA toolchain |
+
+### Step 2: Open a Terminal
+
+| OS | How to Open |
+|----|-------------|
+| **Linux** | `Ctrl+Alt+T` or search "Terminal" |
+| **macOS** | `Cmd+Space` → type "Terminal" → press Enter |
+| **Windows** | `Win+R` → type `cmd` → press Enter, or use [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701) |
+
+### Step 3: Navigate to the Hardware Directory
+
+```bash
+cd "hardware implementation"
+```
+
+### Step 4: Compile and Simulate
+
+#### Option A: Icarus Verilog
+
+```bash
+iverilog -o tb_sim -y . tb_aes_256_top.v
+vvp tb_sim
+```
+
+#### Option B: Xilinx Vivado
+
+1. Open Vivado → **Create Project**
+2. Project name: `aes256_demo`
+3. Add all `.v` files from this directory as **Design Sources**
+4. Add `tb_aes_256_top.v` as **Simulation Source**
+5. In the Flow Navigator, click **Run Simulation** → **Run Behavioral Simulation**
+6. Check the Tcl Console for test results
+
+### Step 5: Expected Output
+
+```
+TEST 1: PASS  CT=8ea2b7ca516745bfeafc49904b496089
+TEST 2: PASS  CT=dc95c078a2408989ad48a21492842087
+TEST 3: PASS  CT=d9b8841702b50e9b5ed50a1494dff0e2
+-------------------
+Results: 3 passed, 0 failed
+-------------------
+```
+
+### Step 6: View the RTL Schematic (Vivado only)
+
+1. Run **Synthesis** → **Open Synthesized Design**
+2. Click **Schematic** to view the block diagram
+3. Reference schematic: `aes_256_schematic.png.png`
+
+### Step 7: View Waveforms (Optional)
+
+```bash
+# Icarus Verilog generates tb_sim.vcd by default
+gtkwave tb_sim.vcd
+```
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `iverilog: command not found` (Linux) | `sudo apt install iverilog` (Debian/Ubuntu) or `sudo dnf install iverilog` (Fedora) |
+| `iverilog: command not found` (macOS) | `brew install icarus-verilog` |
+| `iverilog: command not found` (Windows) | Download from [iverilog.icarus.com](https://iverilog.icarus.com) and add to PATH |
+| `vvp: command not found` | Reinstall Icarus Verilog — `vvp` is bundled with it |
+| Simulation shows all `X` or `Z` | Check that `rst` is asserted at time 0 in the testbench |
+| `Permission denied` | Run `chmod +x` on any scripts, or use `python3` instead of direct execution |
+| Vivado "cannot open file" | Create a project first, then add files — don't open `.v` files directly |

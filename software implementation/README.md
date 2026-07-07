@@ -103,3 +103,70 @@ print("Hardware-software cross-validation: PASS")
 
 - Python 3.8+
 - No external dependencies (standard library only)
+
+---
+
+## Demo / Walkthrough
+
+### Step 1: Open a Terminal
+
+| OS | How to Open |
+|----|-------------|
+| **Linux** | `Ctrl+Alt+T` or search "Terminal" |
+| **macOS** | `Cmd+Space` → type "Terminal" → press Enter |
+| **Windows** | `Win+R` → type `cmd` → press Enter, or install [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701) |
+
+### Step 2: Navigate to the Project
+
+```bash
+cd "software implementation"
+```
+
+### Step 3: Run the Demo
+
+```bash
+python3 aes256_software.py
+```
+
+If `python3` is not found, try `python` instead:
+
+| OS | Try This |
+|----|----------|
+| Linux | `python3 aes256_software.py` |
+| macOS | `python3 aes256_software.py` |
+| Windows | `python aes256_software.py` |
+
+### Step 4: Expected Output
+
+```
+AES-256 Software Implementation
+========================================
+Test 1: PASS
+Test 2: PASS
+Test 3: PASS
+========================================
+Results: 3/3 tests passed
+```
+
+### Step 5: Use as an Interactive Module
+
+```python
+python3
+>>> from aes256_software import AES256
+>>> key = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+>>> aes = AES256(key)
+>>> ct = aes.encrypt(bytes.fromhex("00112233445566778899aabbccddeeff"))
+>>> ct.hex()
+'8ea2b7ca516745bfeafc49904b496089'
+>>> aes.decrypt(ct).hex()
+'00112233445566778899aabbccddeeff'
+```
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `python3: command not found` (Windows) | Use `python` instead of `python3`, or install from [python.org](https://python.org) |
+| `python3: command not found` (Linux/macOS) | `sudo apt install python3` (Debian/Ubuntu), `brew install python3` (macOS) |
+| `pip3: command not found` | Not needed — no external dependencies |
+| `ModuleNotFoundError` | Run from the project root so `aes256_software.py` is in the current directory |
