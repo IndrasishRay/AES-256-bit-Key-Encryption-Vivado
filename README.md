@@ -15,15 +15,36 @@ This project is an RTL-level hardware implementation of the AES-256 encryption s
 * **IDE:** Xilinx Vivado
 * **Language:** Verilog
 
+# AES-256 Hardware Architecture Design
+
+## Project Structure
+```
+AES-256-bit-Key-Encryption--Vivado-Architecture/
+├── hardware implementation/    # Verilog RTL source files
+│   ├── aes_256_top.v
+│   ├── aes256_key_expansion_flat.v
+│   ├── subbytes.v
+│   ├── sbox_lookup.v
+│   ├── shiftrows.v
+│   ├── mixcolumns.v
+│   └── aes_256_schematic.png.png
+├── software implementation/    # (Placeholder for future SW implementations)
+└── README.md
+```
+
+## Tools Used
+* **IDE:** Xilinx Vivado
+* **Language:** Verilog
+
 ## Module Hierarchy
 | Module | File | Description |
 |---|---|---|
-| `aes_256_top` | `aes_256_top.v` | Top-level FSM — 14-round encryption controller |
-| `aes256_key_expansion_flat` | `aes256_key_expansion_flat.v` | Combinational key expander — generates 15 round keys from 256-bit key |
-| `subbytes` | `subbytes.v` | SubBytes stage — 16 parallel S-box substitutions |
-| `sbox_lookup` | `sbox_lookup.v` | AES S-box (256-entry lookup table) |
-| `shiftrows` | `shiftrows.v` | ShiftRows stage — byte permutation across state rows |
-| `mixcolumns` | `mixcolumns.v` | MixColumns stage — GF(2^8) column mixing |
+| `aes_256_top` | `hardware implementation/aes_256_top.v` | Top-level FSM — 14-round encryption controller |
+| `aes256_key_expansion_flat` | `hardware implementation/aes256_key_expansion_flat.v` | Combinational key expander — generates 15 round keys from 256-bit key |
+| `subbytes` | `hardware implementation/subbytes.v` | SubBytes stage — 16 parallel S-box substitutions |
+| `sbox_lookup` | `hardware implementation/sbox_lookup.v` | AES S-box (256-entry lookup table) |
+| `shiftrows` | `hardware implementation/shiftrows.v` | ShiftRows stage — byte permutation across state rows |
+| `mixcolumns` | `hardware implementation/mixcolumns.v` | MixColumns stage — GF(2^8) column mixing |
 
 ## Bug Fixes (v2)
 
@@ -70,4 +91,4 @@ Because this project stopped at the RTL schematic layer due to physical routing 
 To resolve the 500+ pin bottleneck, the architecture will transition from direct parallel I/O ports to a **Hardware-Software Co-Design** approach, using an internal **AXI4-Lite/Stream interface** to stream data through the Zynq Processing System (PS) instead of physical FPGA pins.
 
 ## Synthesized RTL Schematic
-![AES-256 Top-Level Schematic](aes_256_schematic.png.png)
+![AES-256 Top-Level Schematic](hardware%20implementation/aes_256_schematic.png.png)
