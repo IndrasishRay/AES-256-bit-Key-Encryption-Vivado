@@ -34,8 +34,8 @@ set_property IOSTANDARD LVCMOS33 [get_ports {led[2]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {led[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {led[0]}]
 
-# ── Done LED (LD7 — Bank 33) ──
-set_property PACKAGE_PIN T22     [get_ports aes_done_led]
+# ── Done LED (use a free pin — avoid collision with led[7] at T22) ──
+set_property PACKAGE_PIN U14     [get_ports aes_done_led]
 set_property IOSTANDARD LVCMOS33 [get_ports aes_done_led]
 
 # ── Configuration ──
