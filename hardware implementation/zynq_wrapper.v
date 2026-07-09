@@ -46,7 +46,6 @@ module zynq_wrapper (
 
     reg [255:0] key;
     reg [127:0] plain_text;
-    reg         start_pulse;
     reg         start_reg;
     wire [127:0] cipher_text;
     wire         done;
@@ -61,14 +60,26 @@ module zynq_wrapper (
         .done(done)
     );
 
-    reg [31:0] key_regs [7:0];
-    reg [31:0] pt_regs  [3:0];
-    reg [31:0] ct_regs  [3:0];
+    reg [31:0] key_reg0;
+    reg [31:0] key_reg1;
+    reg [31:0] key_reg2;
+    reg [31:0] key_reg3;
+    reg [31:0] key_reg4;
+    reg [31:0] key_reg5;
+    reg [31:0] key_reg6;
+    reg [31:0] key_reg7;
+    reg [31:0] pt_reg0;
+    reg [31:0] pt_reg1;
+    reg [31:0] pt_reg2;
+    reg [31:0] pt_reg3;
+    reg [31:0] ct_reg0;
+    reg [31:0] ct_reg1;
+    reg [31:0] ct_reg2;
+    reg [31:0] ct_reg3;
     reg        start_written;
 
-    // AXI-Lite write FSM
     reg [1:0] wstate;
-    localparam W_IDLE = 0, W_ADDR = 1, W_DATA = 2, W_RESP = 3;
+    localparam W_IDLE = 0, W_ADDR = 1, W_RESP = 2;
 
     assign s_axi_awready = (wstate == W_IDLE);
     assign s_axi_wready  = (wstate == W_ADDR);
@@ -78,36 +89,42 @@ module zynq_wrapper (
     always @(posedge s_axi_aclk or negedge s_axi_aresetn) begin
         if (!s_axi_aresetn) begin
             wstate <= W_IDLE;
-            for (int i = 0; i < 8; i++) key_regs[i] <= 0;
-            for (int i = 0; i < 4; i++) pt_regs[i] <= 0;
+            key_reg0 <= 0; key_reg1 <= 0; key_reg2 <= 0; key_reg3 <= 0;
+            key_reg4 <= 0; key_reg5 <= 0; key_reg6 <= 0; key_reg7 <= 0;
+            pt_reg0 <= 0; pt_reg1 <= 0; pt_reg2 <= 0; pt_reg3 <= 0;
             start_written <= 0;
         end else begin
             case (wstate)
-                W_IDLE: if (s_axi_awvalid) wstate <= W_ADDR;
-                W_ADDR: if (s_axi_wvalid) begin
-                    case (s_axi_awaddr)
-                        ADDR_KEY0: key_regs[0] <= s_axi_wdata;
-                        ADDR_KEY1: key_regs[1] <= s_axi_wdata;
-                        ADDR_KEY2: key_regs[2] <= s_axi_wdata;
-                        ADDR_KEY3: key_regs[3] <= s_axi_wdata;
-                        ADDR_KEY4: key_regs[4] <= s_axi_wdata;
-                        ADDR_KEY5: key_regs[5] <= s_axi_wdata;
-                        ADDR_KEY6: key_regs[6] <= s_axi_wdata;
-                        ADDR_KEY7: key_regs[7] <= s_axi_wdata;
-                        ADDR_PT0:  pt_regs[0] <= s_axi_wdata;
-                        ADDR_PT1:  pt_regs[1] <= s_axi_wdata;
-                        ADDR_PT2:  pt_regs[2] <= s_axi_wdata;
-                        ADDR_PT3:  pt_regs[3] <= s_axi_wdata;
-                        ADDR_CTRL: start_written <= s_axi_wdata[0];
-                    endcase
-                    wstate <= W_RESP;
+                W_IDLE: begin
+                    if (s_axi_awvalid) wstate <= W_ADDR;
                 end
-                W_RESP: if (s_axi_bready) wstate <= W_IDLE;
+                W_ADDR: begin
+                    if (s_axi_wvalid) begin
+                        case (s_axi_awaddr)
+                            ADDR_KEY0: key_reg0 <= s_axi_wdata;
+                            ADDR_KEY1: key_reg1 <= s_axi_wdata;
+                            ADDR_KEY2: key_reg2 <= s_axi_wdata;
+                            ADDR_KEY3: key_reg3 <= s_axi_wdata;
+                            ADDR_KEY4: key_reg4 <= s_axi_wdata;
+                            ADDR_KEY5: key_reg5 <= s_axi_wdata;
+                            ADDR_KEY6: key_reg6 <= s_axi_wdata;
+                            ADDR_KEY7: key_reg7 <= s_axi_wdata;
+                            ADDR_PT0:  pt_reg0 <= s_axi_wdata;
+                            ADDR_PT1:  pt_reg1 <= s_axi_wdata;
+                            ADDR_PT2:  pt_reg2 <= s_axi_wdata;
+                            ADDR_PT3:  pt_reg3 <= s_axi_wdata;
+                            ADDR_CTRL: start_written <= s_axi_wdata[0];
+                        endcase
+                        wstate <= W_RESP;
+                    end
+                end
+                W_RESP: begin
+                    if (s_axi_bready) wstate <= W_IDLE;
+                end
             endcase
         end
     end
 
-    // Read path
     reg [1:0] rstate;
     localparam R_IDLE = 0, R_DATA = 1;
 
@@ -124,24 +141,29 @@ module zynq_wrapper (
             rdata <= 0;
         end else begin
             case (rstate)
-                R_IDLE: if (s_axi_arvalid) begin
-                    case (s_axi_araddr)
-                        ADDR_CT0:  rdata <= ct_regs[0];
-                        ADDR_CT1:  rdata <= ct_regs[1];
-                        ADDR_CT2:  rdata <= ct_regs[2];
-                        ADDR_CT3:  rdata <= ct_regs[3];
-                        ADDR_CTRL: rdata <= {31'b0, done};
-                        default:   rdata <= 0;
-                    endcase
-                    rstate <= R_DATA;
+                R_IDLE: begin
+                    if (s_axi_arvalid) begin
+                        case (s_axi_araddr)
+                            ADDR_CT0:  rdata <= ct_reg0;
+                            ADDR_CT1:  rdata <= ct_reg1;
+                            ADDR_CT2:  rdata <= ct_reg2;
+                            ADDR_CT3:  rdata <= ct_reg3;
+                            ADDR_CTRL: rdata <= {31'b0, done};
+                            default:   rdata <= 0;
+                        endcase
+                        rstate <= R_DATA;
+                    end
                 end
-                R_DATA: if (s_axi_rready) rstate <= R_IDLE;
+                R_DATA: begin
+                    if (s_axi_rready) rstate <= R_IDLE;
+                end
             endcase
         end
     end
 
-    // Clock-domain crossing: start pulse from s_axi_aclk to clk
-    reg start_meta, start_sync;
+    reg start_meta;
+    reg start_sync;
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             start_meta <= 0;
@@ -154,24 +176,22 @@ module zynq_wrapper (
         end
     end
 
-    // Commit registers when start triggers
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             key <= 0;
             plain_text <= 0;
         end else if (start_reg) begin
-            key <= {key_regs[7], key_regs[6], key_regs[5], key_regs[4],
-                    key_regs[3], key_regs[2], key_regs[1], key_regs[0]};
-            plain_text <= {pt_regs[3], pt_regs[2], pt_regs[1], pt_regs[0]};
+            key <= {key_reg7, key_reg6, key_reg5, key_reg4,
+                    key_reg3, key_reg2, key_reg1, key_reg0};
+            plain_text <= {pt_reg3, pt_reg2, pt_reg1, pt_reg0};
         end
     end
 
-    // Capture ciphertext
     always @(posedge clk) begin
-        ct_regs[0] <= cipher_text[31:0];
-        ct_regs[1] <= cipher_text[63:32];
-        ct_regs[2] <= cipher_text[95:64];
-        ct_regs[3] <= cipher_text[127:96];
+        ct_reg0 <= cipher_text[31:0];
+        ct_reg1 <= cipher_text[63:32];
+        ct_reg2 <= cipher_text[95:64];
+        ct_reg3 <= cipher_text[127:96];
     end
 
     assign interrupt = done;
