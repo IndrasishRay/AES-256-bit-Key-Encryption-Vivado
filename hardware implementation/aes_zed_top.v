@@ -4,8 +4,7 @@ module aes_zed_top (
     input  wire         clk_100m,
     input  wire         rst_btn_n,
     input  wire         start_btn,
-    output wire [7:0]   led,
-    output wire         aes_done_led
+    output wire [7:0]   led
 );
 
     wire         clk;
@@ -67,7 +66,6 @@ module aes_zed_top (
         .done(done)
     );
 
-    assign led = cipher_text[7:0];
-    assign aes_done_led = done;
+    assign led = done ? 8'b11111111 : cipher_text[7:0];
 
 endmodule
